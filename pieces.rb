@@ -1,122 +1,165 @@
 module Pieces
 
-	class Pawn
-		attr_reader :white_sign, :black_sign
+	class Piece
+		attr_accessor :current_position
+		attr_reader :sign
+	end
 
-		def initialize
-			@white_sign = "\u265F"
-			@black_sign = "\u2659"
+	class Pawn < Piece
+
+		def initialize(white=false)
+			@sign = white ? "\u265F" : "\u2659"
 			@current_position = nil
-		end
-
-		def set_current_position(position)
-			@current_position = position
 		end
 
 		def legal_move?(move)
 			if [8,9,10,11,12,13,14,15].include?(@current_position)
-				return true if [8, 16].include?(move - @current_position) && (0..7).include?(move)
+				return true if [8, 16].include?(move - @current_position) && (0..63).include?(move)
+			elsif move - @current_position == 8 && move - @current_position >= 0
+				return true
 			end
-			return true if move - @current_position == 8 && move - @current_position >= 0
+			return false
+		end
+
+		def legal_list(move)
+			list = []
+			check = @current_position
+			list << check + 8
+			return list
 		end
 	end
 
-	class Rook
-		attr_reader :white_sign, :black_sign
+	class Rook < Piece
 
-		def initialize
-			@white_sign = "\u265C"
-			@black_sign = "\u2656"
+		def initialize(white=false)
+			@sign = white ? "\u265C" : "\u2656"
 			@current_position = nil
 		end
 
-		def set_current_position(position)
-			@current_position = position
-		end
-
 		def legal_move?(move)
-			return true if [8,16,24,32,40,48,56].include?(move - @current_position) && (0..7).include?(move)
-			return true if [8,16,24,32,40,48,56].include?(@current_position - move) && (0..7).include?(move)
-		end
-	end
-
-	class Knight
-		attr_reader :white_sign, :black_sign
-
-		def initialize
-			@white_sign = "\u265E"
-			@black_sign = "\u2658"
-			@current_position = nil
+			return true if [1,2,3,4,5,6,7,8,16,24,32,40,48,56].include?(move - @current_position) && (0..63).include?(move)
+			return true if [1,2,3,4,5,6,7,8,16,24,32,40,48,56].include?(@current_position - move) && (0..63).include?(move)
+			return false
 		end
 
-		def set_current_position(position)
-			@current_position = position
-		end
-
-		def legal_move?(move)
-			return true if [6,10,15,17].include?(move - @current_position) && (0..7).include?(move)
-			return true if [6,10,15,17].include?(@current_position - move) && (0..7).include?(move)
-		end
-	end
-
-	class Bishop
-		attr_reader :white_sign, :black_sign
-
-		def initialize
-			@white_sign = "\u265D"
-			@black_sign = "\u2657"
-			@current_position = nil
-		end
-
-		def set_current_position(position)
-			@current_position = position
-		end
-
-		def legal_move?(move)
-			return true if [9,18,27,36,45,53,62].include?(move - @current_position) && (0..7).include?(move)
-			return true if [9,18,27,36,45,53,62].include?(@current_position - move) && (0..7).include?(move)
-		end
-	end
-
-	class King
-		attr_reader :white_sign, :black_sign
-
-		def initialize
-			@white_sign = "\u265A"
-			@black_sign = "\u2654"
-			@current_position = nil
-		end
-
-		def set_current_position(position)
-			@current_position = position
-		end
-
-		def legal_move?(move)
-			if move[0] - @current_position[0] == 1 && move[1] == @current_position[1]
-				return true if [7,8,9].include?(move - @current_position) && (0..7).include?(move)
-				return true if [7,8,9].include?(@current_position - move) && (0..7).include?(move)
+		def legal_list(move)
+			list = []
+			check = @current_position + 1
+			if (move - @current_position) < 8
+				until check == move+1
+					list << check
+					check += 1
+				end
+			else
+				check = @current_position
+				until check == move
+					check += 8
+					list << check
+				end
 			end
+			return list
 		end
 	end
 
-	class Queen
-		attr_reader :white_sign, :black_sign
+	class Knight < Piece
 
-		def initialize
-			@white_sign = "\u265B"
-			@black_sign = "\u2655"
+		def initialize(white=false)
+			@sign = white ? "\u265E" : "\u2658"
 			@current_position = nil
 		end
 
-		def set_current_position(position)
-			@current_position = position
+		def legal_move?(move)
+			return true if [6,10,15,17].include?(move - @current_position) && (0..63).include?(move)
+			return true if [6,10,15,17].include?(@current_position - move) && (0..63).include?(move)
+			return false
+		end
+	end
+
+	class Bishop < Piece
+
+		def initialize(white=false)
+			@sign = white ? "\u265D" : "\u2657"
+			@current_position = nil
 		end
 
 		def legal_move?(move)
-			if move[0] - @current_position[0] == 1 && move[1] == @current_position[1]
-				return true if [8,16,24,32,40,48,56,9,18,27,36,45,53,62].include?(move - @current_position) && (0..7).include?(move)
-				return true if [8,16,24,32,40,48,56,9,18,27,36,45,53,62].include?(@current_position - move) && (0..7).include?(move)
+			return true if [7,9,14,18,21,27,28,36,35,45,42,53,49,56,62].include?(move - @current_position) && (0..63).include?(move)
+			return true if [7,9,14,18,21,27,28,36,35,45,42,53,49,56,62].include?(@current_position - move) && (0..63).include?(move)
+			return false
+		end
+
+		def legal_list(move)
+			list = []
+			if move - @current_position > 0
+				if [7,14,21,28,35,42,49,56].include?(move - @current_position)
+					check = @current_position + 7
+					until check > move
+						list << check
+						check += 7
+					end
+				else
+					check = @current_position + 9
+					until check > move
+						list << check
+						check += 9
+					end
+				end
+			else
+				if [7,14,21,28,35,42,49,56].include?(@current_position - move)
+					check = @current_position - 7
+					until move > check
+						list << check
+						check -= 7
+					end
+				else
+					check = @current_position - 9
+					until move > check
+						list << check
+						check -= 9
+					end
+				end
 			end
+			return list
+		end
+	end
+
+	class King < Piece
+
+		def initialize(white=false)
+			@sign = white ? "\u265A" : "\u2654"
+			@current_position = nil
+		end
+
+		def legal_move?(move)
+			return true if [7,8,9].include?(move - @current_position) && (0..63).include?(move)
+			return true if [7,8,9].include?(@current_position - move) && (0..63).include?(move)
+			return false
+		end
+
+		def legal_list(move)
+			check = @current_position
+			list = []
+		end
+	end
+
+	class Queen < Piece
+
+		def initialize(white=false)
+			@sign = white ? "\u265B" : "\u2655"
+			@current_position = nil
+		end
+
+		def legal_move?(move)
+			return true if [8,16,24,32,40,48,56,9,18,27,36,45,53,62].include?(move - @current_position) && (0..63).include?(move)
+			return true if [8,16,24,32,40,48,56,9,18,27,36,45,53,62].include?(@current_position - move) && (0..63).include?(move)
+			return false
+		end
+
+		def legal_list(move)
+			check = @current_position
+			list = []
 		end
 	end
 end
+
+rook = Pieces::Rook.new
