@@ -1,7 +1,8 @@
 require_relative "pieces.rb"
 
 class Player
-	attr_reader :name, :pieces, :from, :to, :white
+	attr_accessor :name
+	attr_reader :pieces, :from, :to, :white
 
 	def initialize(white=false)
 		@name = nil
@@ -26,13 +27,16 @@ class Player
 
 	def get_name
 		print "Enter Player's name: "
-		@player = gets.chomp.downcase.capitalize
+		@name = gets.chomp.downcase.capitalize
 	end
 
 	def make_move
-		print "Enter your move. From: "
+		puts "\nEnter your move."
+		print "From : "
 		@from = gets.chomp.chars
-		print "To: "
+		print "To   : "
 		@to = gets.chomp.chars
+		@from[1] = @from[1].to_i
+		@to[1] = @to[1].to_i
 	end
 end
