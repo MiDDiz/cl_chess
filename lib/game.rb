@@ -6,18 +6,53 @@ require_relative "technical.rb"
 class Game
 	include SpecialMoves
 	include Technical
-	attr_reader :board, :taken_black, :taken_white
 
 	def initialize
-		@player_1 = Player.new(true)
-		@player_2 = Player.new
 		@board = Board.new
 		@turns = 0
-		@taken_black = []
-		@taken_white = []
 		@over = false
+		@check = 0
 		options
 		new_or_saved
+	end
+
+	def human?
+		puts "Would you like to play against the computer?(y/n)"
+		@response = gets.chomp.downcase
+		case @response
+		when "y" then @response = false
+		when "n" then @response = true
+		end
+		return @response
+	end
+
+	def pick
+		if human?
+			human
+		else
+			ai
+		end
+	end
+
+	def human
+		@player_1 = Human.new(true)
+		@player_2 = Human.new
+	end
+
+	def ai
+		@player_1 = Human.new(true)
+		@player_2 = AI.new
+	end
+
+	def intro
+		system("clear")
+		sleep 1
+		pick
+		welcome
+		player_name
+		system("clear")
+		sleep 1
+		set_board
 	end
 
 	def welcome
@@ -27,15 +62,13 @@ class Game
 		puts "======================================================="
 	end
 
-	def start
-		system("clear")
-		sleep 1
-		welcome
-		@player_1.get_name
-		@player_2.get_name
-		system("clear")
-		sleep 1
-		set_board
+	def player_name
+		if @response
+			@player_1.get_name
+			@player_2.get_name
+		else
+			@player_1.get_name
+		end
 	end
 
 	def set_board
@@ -68,36 +101,126 @@ class Game
 		puts @turns.odd? ? "\nIt is Black's turn!" : "\nIt is White's turn!"
 	end
 
-	def place_piece(from, to)
-		to_cloned = to.clone
-		if @board.board[to.join.to_sym].class != Pieces::King
-			take_out(from, to) if @board.board[to.join.to_sym] != " "
-			@board.board[to.join.to_sym] = @board.board[from.join.to_sym]
-			@board.board[to.join.to_sym].moved = true
-			@board.board[to.join.to_sym].times_moved += 1
-			@board.board[to.join.to_sym].current_position = convert(to_cloned)
-			@board.board[from.join.to_sym] = " "
-		end
+	def show_move
+		puts "From : #{@player_2.from.join unless @player_2.from.nil?}"
+		puts "To   : #{@player_2.to.join unless @player_2.to.nil?}"
 	end
 
-	def take_out(from, to)
-		if @board.board[from.join.to_sym].white != @board.board[to.join.to_sym].white
-			@board.board[from.join.to_sym].white ? @taken_black << @board.board[to.join.to_sym] : @taken_white << @board.board[to.join.to_sym]
+	def human_play
+		@turns.odd? ? @player_2.make_move : @player_1.make_move
+		@to = @turns.odd? ? @player_2.to : @player_1.to
+		@from = @turns.odd? ? @player_2.from : @player_1.from
+	end
+
+	def ai_play
+		unless @turns.odd?
+			@player_1.make_move
+			@to = @player_1.to
+			@from = @player_1.from
 		else
-			invalid_move
+			@from = @player_2.ai_from(@board.board)
+			@to = @player_2.ai_to(@board.board)
+			show_move if !@response && @turns.odd?
 		end
 	end
 
-	def pawn_take_out(from, to)
-		from_cloned = from.clone
-		to_cloned = to.clone
-		if [-7,-9,7,9].include?(convert(to_cloned) - convert(from_cloned)) && @board.board[from.join.to_sym].white != @board.board[to.join.to_sym].white
-			if [1,2,3,4,5,6,7,8,57,58,59,60,61,62,63,64].include?(convert(to_cloned))
-				take_out(from, to)
-				promote(from, to)
+	def color_control?(from, to)
+		if @board.board[from.join.to_sym].white != @board.board[to.join.to_sym].white
+			return true
+		else
+			return false
+		end
+	end
+
+	def correct_color?(spot)
+		if @board.board[spot.join.to_sym].white && !@turns.odd?
+			return true
+		elsif !@board.board[spot.join.to_sym].white && @turns.odd?
+			return true
+		else
+			return false
+		end
+	end
+
+	def valid_move?(from, to)
+		if @board.board[to.join.to_sym] != " " && color_control?(from, to)
+			return true
+		elsif @board.board[to.join.to_sym] == " "
+			return true
+		else
+			return false
+		end
+	end
+
+	def start
+		begin
+			@board.display
+			until @check_mate
+				proceed
+			end
+		rescue Interrupt
+			rescue_interrupt
+		end
+	end
+
+	def proceed
+		puts "#{@turns.odd? ? "Black" : "White"} check!" if check?(@board.board)
+		en_passant
+		whose_turn
+		play_piece
+		@board.display
+		check_mate
+		turn
+	end
+
+	def play_piece
+		if check?(@board.board)
+			when_check
+		else
+			when_not_check
+		end
+		check_exit
+		movement
+	end
+
+	def movement
+		begin
+			invalid_move unless valid_move?(@from, @to)
+			if correct_color?(@from)
+				en_passant_turn(@from, @to)
+				play(@from, @to)
 			else
-				take_out(from, to)
-				place_piece(from, to)
+				invalid_move
+			end
+		rescue NoMethodError
+			error_info
+			start
+		end
+	end
+
+	def play(from, to)
+		to_cloned = to.clone
+		unless getting_into_check?(from, to)
+			if @board.board[from.join.to_sym].class == Pieces::Pawn 
+				pawn_play(from, to)
+			elsif @board.board[from.join.to_sym].legal_move?(convert(to_cloned))
+				if @board.board[from.join.to_sym].class == Pieces::Knight
+					if from[1] != to[1]
+						place_piece(from, to)
+					else
+						invalid_move
+					end
+				elsif @board.board[from.join.to_sym].class == Pieces::King || @board.board[from.join.to_sym].legal_list(convert(to_cloned)).all? { |n| @board.board[convert_back(n).join.to_sym] == " " }
+					if @board.board[from.join.to_sym].class == Pieces::Rook
+						castle(from, to)
+					else
+						place_piece(from, to)
+					end
+				else
+					invalid_move
+				end
+			else
+				invalid_move
 			end
 		else
 			invalid_move
@@ -108,8 +231,7 @@ class Game
 		from_cloned = from.clone
 		to_cloned = to.clone
 		if !@board.board[from.join.to_sym].legal_move?(convert(to_cloned))
-			check_mate(from, to)
-			pawn_take_out(from, to)
+			pawn_capture(from, to)
 		elsif @board.board[from.join.to_sym].legal_move?(convert(to_cloned)) && @board.board[to.join.to_sym] == " "
 			if [1,2,3,4,5,6,7,8,57,58,59,60,61,62,63,64].include?(convert(to_cloned))
 				promote(from, to)
@@ -121,52 +243,71 @@ class Game
 		end
 	end
 
-	def play(from, to)
+	def pawn_capture(from, to)
+		from_cloned = from.clone
 		to_cloned = to.clone
-		if @board.board[from.join.to_sym].class == Pieces::Pawn 
-			pawn_play(from, to)
-		elsif @board.board[from.join.to_sym].legal_move?(convert(to_cloned))
-			if @board.board[from.join.to_sym].class == Pieces::Knight
-				place_piece(from, to)
-			elsif @board.board[from.join.to_sym].legal_list(convert(to_cloned)).all? { |n| @board.board[convert_back(n).join.to_sym] == " " }
-				if @board.board[from.join.to_sym].class == Pieces::Rook
-					castle(from, to)
-				else
-					place_piece(from, to)
-				end
+		if [-7,-9,7,9].include?(convert(to_cloned) - convert(from_cloned)) && @board.board[from.join.to_sym].white != @board.board[to.join.to_sym].white
+			if [1,2,3,4,5,6,7,8,57,58,59,60,61,62,63,64].include?(convert(to_cloned))
+				promote(from, to)
 			else
-				invalid_move
+				place_piece(from, to)
 			end
 		else
 			invalid_move
 		end
 	end
 
-	def black_play
-		@player_2.make_move
-		if !@player_2.from.nil?
-			exit_game if @player_2.from.join == "e0"
+	def place_piece(from, to)
+		to_cloned = to.clone
+		if @board.board[to.join.to_sym].class != Pieces::King
+			@board.board[to.join.to_sym] = @board.board[from.join.to_sym]
+			@board.board[to.join.to_sym].moved = true
+			@board.board[to.join.to_sym].times_moved += 1
+			@board.board[to.join.to_sym].current_position = convert(to_cloned)
+			@board.board[from.join.to_sym] = " "
+		else
+			invalid_move
 		end
-		play(@player_2.from, @player_2.to)
-		turn unless @player_2.from.join == "e0"
 	end
 
-	def white_play
-		@player_1.make_move
-		if !@player_1.from.nil?
-			exit_game if @player_1.from.join == "e0"
+	def when_not_check
+		if @response
+			human_play
+		else
+			ai_play
 		end
-		play(@player_1.from, @player_1.to)
-		turn unless @player_1.from.join == "e0"
 	end
 
-	def check?
-		@board.board.each do |key, value|
+	def getting_into_check?(from, to)
+		board = @board.board.clone
+		board[to.join.to_sym] = board[from.join.to_sym]
+		board[from.join.to_sym] = " "
+		if check?(board)
+			if !@turns.odd? && board[to.join.to_sym].white
+				return true
+			elsif @turns.odd? && !board[to.join.to_sym].white
+				return true
+			else
+				return false
+			end
+		else
+			return false
+		end
+	end
+
+	def check?(board)
+		board.each do |key, value|
 			if value != " "
 				value.legal_move_list.each do |n|
-					if (1..64).include?(value.current_position + n) && @board.board[convert_back(value.current_position + n).join.to_sym].class == Pieces::King
-						if @board.board[convert_back(value.current_position + n).join.to_sym].white != value.white
-							if (value.class == Pieces::Knight || value.legal_move?(value.current_position + n)) && value.legal_list(value.current_position + n).all? { |x| @board.board[convert_back(x).join.to_sym] == " " }
+					if (1..64).include?(value.current_position + n) && board[convert_back(value.current_position + n).join.to_sym].class == Pieces::King
+						if board[convert_back(value.current_position + n).join.to_sym].white != value.white
+							if value.class != Pieces::Knight
+								if value.class == Pieces::Pawn
+									return true
+								elsif value.legal_move?(value.current_position + n) && value.legal_list(value.current_position + n).all? { |x| board[convert_back(x).join.to_sym] == " " }
+									return true
+								end
+							elsif value.legal_move?(value.current_position + n)
 								return true
 							end
 						end
@@ -177,36 +318,62 @@ class Game
 		return false
 	end
 
-	def check_mate(from, to)
-		if @board.board[to.join.to_sym] != " " && @board.board[to.join.to_sym].class == Pieces::King
-			puts "Checkmate! #{@turns.odd? ? "Black" : "White"} wins!"
-			@over = true
+	def when_check
+		get_move_while_check
+		while_check
+		if forfeit?
+			check_mate
+		else
+			out_of_check
 		end
 	end
 
-
-	def proceed
-		@board.display
-		until over?
-			if @turns.odd?
-				check_enpassant(@player_1.from, @player_1.to)
-				whose_turn
-				black_play
-				@board.display
-				check_mate(@player_2.from, @player_2.to)
-			else
-				check_enpassant(@player_2.from, @player_2.to)
-				whose_turn
-				white_play
-				@board.display
-				check_mate(@player_1.from, @player_1.to)
-			end
-			puts "#{@turns.odd? ? "Black" : "White"} check!" if check?
+	def while_check
+		while still_check?(@from, @to)
+			get_move_while_check
 		end
 	end
 
-	def over?
-		@over
+	def get_move_while_check
+		puts "\nYou are in a check position. Please enter your move to get out of it."
+		print "From : "
+		if @response
+			@from = gets.chomp.chars
+			@from[1] = @from[1].to_i
+		else
+			@from = @player_2.ai_from(@board.board)
+		end
+		print "To   : "
+		if @response
+			@to = gets.chomp.chars
+			@to[1] = @to[1].to_i
+		else
+			@to = @player_2.ai_to(@board.board)
+		end
+	end	
+
+	def still_check?(from, to)
+		board = @board.board.clone
+		board[to.join.to_sym] = board[from.join.to_sym]
+		board[from.join.to_sym] = " "
+		return true if check?(board)
+	end
+
+	def out_of_check
+		if @turns.odd?
+			@player_2.from = @from
+			@player_2.to = @to
+		else
+			@player_1.from = @from
+			@player_1.to = @to
+		end
+	end
+
+	def check_mate
+		if @checkmate
+			puts "Checkmate! #{@turns.odd? ? "White" : "Black"} wins!"
+			exit
+		end
 	end
 end
 

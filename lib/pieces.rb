@@ -3,17 +3,23 @@ module Pieces
 	class Piece
 		attr_accessor :current_position, :moved, :times_moved
 		attr_reader :sign, :white, :legal_move_list
-	end
-
-	class Pawn < Piece
 
 		def initialize(white=false)
-			@sign = white ? "\u265F" : "\u2659"
 			@current_position = nil
 			@white = white
 			@moved = false
 			@times_moved = 0
+		end
+	end
+
+	class Pawn < Piece
+		attr_accessor :en_passant_valid
+
+		def initialize(white=false)
+			super
+			@sign = white ? "\u265F" : "\u2659"
 			@legal_move_list = [7,9]
+			@en_passant_valid = false
 		end
 
 		def legal_move?(move)
@@ -32,34 +38,44 @@ module Pieces
 			end
 			return false
 		end
-
-		def legal_list(move)
-			list = []
-			check = @current_position
-			if @white
-				list << check + 8 if move - @current_position == 16
-			else
-				list << check + 8 if @current_position - move == 16
-			end
-			return list
-		end
 	end
 
 	class Rook < Piece
 
 		def initialize(white=false)
+			super
 			@sign = white ? "\u265C" : "\u2656"
-			@current_position = nil
-			@white = white
-			@moved = false
-			@times_moved = 0
 			@legal_move_list = [-1,-2,-3,-4,-5,-6,-7,-8,-16,-24,-32,-40,-48,-56,1,2,3,4,5,6,7,8,16,24,32,40,48,56]
 		end
 
 		def legal_move?(move)
-			return true if [1,2,3,4,5,6,7,8,16,24,32,40,48,56].include?(move - @current_position) && (1..64).include?(move)
-			return true if [1,2,3,4,5,6,7,8,16,24,32,40,48,56].include?(@current_position - move) && (1..64).include?(move)
-			return false
+			if (move - @current_position) > 0 && (move - @current_position) < 8
+				delimiter = 8
+				[1,2,3,4,5,6,7].each do |n|
+					[(1..7),(9..16),(17..23),(25..31),(33..39),(41..47),(49..55),(57..63)].each do |range|
+						if range.include?(@current_position) && @current_position + n <= delimiter
+							return true
+						end
+						delimiter += 8
+					end
+				end
+				return false
+			elsif (move - @current_position) < 0 && (move - @current_position) > -8
+				delimiter = 57
+				[1,2,3,4,5,6,7].each do |n|
+					[(58..64),(49..56),(41..48),(33..40),(25..32),(17..24),(9..16),(1..7)].each do |range|
+						if range.include?(@current_position) && @current_position + n >= delimiter
+							return true
+						end
+						delimiter -= 8
+					end
+				end
+				return false
+			else
+				return true if [8,16,24,32,40,48,56].include?(move - @current_position) && (1..64).include?(move)
+				return true if [8,16,24,32,40,48,56].include?(@current_position - move) && (1..64).include?(move)
+				return false
+			end
 		end
 
 		def legal_list(move)
@@ -93,11 +109,8 @@ module Pieces
 	class Knight < Piece
 
 		def initialize(white=false)
+			super
 			@sign = white ? "\u265E" : "\u2658"
-			@current_position = nil
-			@white = white
-			@moved = false
-			@times_moved = 0
 			@legal_move_list = [-6,-10,-15,-17,6,10,15,17]
 		end
 
@@ -111,11 +124,8 @@ module Pieces
 	class Bishop < Piece
 
 		def initialize(white=false)
+			super
 			@sign = white ? "\u265D" : "\u2657"
-			@current_position = nil
-			@white = white
-			@moved = false
-			@times_moved = 0
 			@legal_move_list = [-7,-9,-14,-18,-21,-27,-28,-36,-35,-45,-42,-53,-49,-56,-62,7,9,14,18,21,27,28,36,35,45,42,53,49,56,62]
 		end
 
@@ -161,11 +171,8 @@ module Pieces
 	class King < Piece
 
 		def initialize(white=false)
+			super
 			@sign = white ? "\u265A" : "\u2654"
-			@current_position = nil
-			@white = white
-			@moved = false
-			@times_moved = 0
 			@legal_move_list = [-1,-7,-8,-9,1,7,8,9]
 		end
 
@@ -174,39 +181,44 @@ module Pieces
 			return true if [1,7,8,9].include?(@current_position - move) && (0..63).include?(move)
 			return false
 		end
-
-		def legal_list(move)
-			check = move - @current_position
-			list = [] 
-			case check
-			when 1 then list << @current_position + 1
-			when 7 then list << @current_position + 7
-			when 8 then list << @current_position + 8
-			when 9 then list << @current_position + 9
-			when -1 then list << @current_position - 1
-			when -7 then list << @current_position - 7
-			when -8 then list << @current_position - 8
-			when -9 then list << @current_position - 9
-			end
-			return list
-		end
 	end
 
 	class Queen < Piece
 
 		def initialize(white=false)
+			super
 			@sign = white ? "\u265B" : "\u2655"
-			@current_position = nil
-			@white = white
-			@moved = false
-			@times_moved = 0
-			@legal_move_list = [-1,-2,-3,-4,-5,-6,-7,-8,-9,-14,-16,-18,-21,-24,-27,-28,-32,-35,-36,-40,-42,-45,-48,-49,-53,-56,-62,-63,-64,1,2,3,4,5,6,7,8,9,14,16,18,21,24,27,28,32,35,36,40,42,45,48,49,53,56,62,63,64]
+			@legal_move_list = [-1,-2,-3,-4,-5,-6,-7,-8,-9,-14,-16,-18,-21,-24,-27,-28,-32,-35,-36,-40,-42,-45,-48,-49,-54,-56,-62,-63,-64,1,2,3,4,5,6,7,8,9,14,16,18,21,24,27,28,32,35,36,40,42,45,48,49,54,56,62,63,64]
 		end
 
 		def legal_move?(move)
-			return true if [1,2,3,4,5,6,7,8,9,14,16,18,21,24,27,28,32,35,36,40,42,45,48,49,53,56,62,63,64].include?(move - @current_position) && (1..64).include?(move)
-			return true if [1,2,3,4,5,6,7,8,9,14,16,18,21,24,27,28,32,35,36,40,42,45,48,49,53,56,62,63,64].include?(@current_position - move) && (1..64).include?(move)
-			return false
+			if (move - @current_position) > 0 && (move - @current_position) < 8
+				limiter = 8
+				[1,2,3,4,5,6,7].each do |n|
+					[(1..8),(9..16),(17..23),(25..31),(33..39),(41..47),(49..55),(57..63)].each do |range|
+						if range.include?(@current_position) && @current_position + n <= limiter
+							return true
+						end
+						limiter += 8
+					end
+				end
+				return false
+			elsif (move - @current_position) < 0 && (move - @current_position) > -8
+				limiter = 57
+				[1,2,3,4,5,6,7].each do |n|
+					[(57..64),(49..56),(41..48),(33..40),(25..32),(17..24),(9..16),(1..7)].each do |range|
+						if range.include?(@current_position) && @current_position + n >= limiter
+							return true
+						end
+						limiter -= 8
+					end
+				end
+				return false
+			else
+				return true if [7,8,9,14,16,18,21,24,27,28,32,35,36,40,42,45,48,49,54,56,62,63,64].include?(move - @current_position) && (1..64).include?(move)
+				return true if [7,8,9,14,16,18,21,24,27,28,32,35,36,40,42,45,48,49,54,56,62,63,64].include?(@current_position - move) && (1..64).include?(move)
+				return false
+			end
 		end
 
 		def legal_list(move)
