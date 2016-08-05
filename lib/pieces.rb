@@ -126,19 +126,18 @@ module Pieces
 		def initialize(white=false)
 			super
 			@sign = white ? "\u265D" : "\u2657"
-			@legal_move_list = [-7,-9,-14,-18,-21,-27,-28,-36,-35,-45,-42,-53,-49,-56,-62,7,9,14,18,21,27,28,36,35,45,42,53,49,56,62]
+			@legal_move_list = [-7,-9,-14,-18,-21,-27,-28,-36,-35,-45,-42,-54,-49,-56,-63,7,9,14,18,21,27,28,36,35,45,42,54,49,56,63]
 		end
 
 		def legal_move?(move)
-			return true if [7,9,14,18,21,27,28,36,35,45,42,53,49,56,62].include?(move - @current_position) && (1..64).include?(move)
-			return true if [7,9,14,18,21,27,28,36,35,45,42,53,49,56,62].include?(@current_position - move) && (1..64).include?(move)
+			return true if [7,9,14,18,21,27,28,36,35,45,42,54,49,56,63].include?(move - @current_position) && (1..64).include?(move)
+			return true if [7,9,14,18,21,27,28,36,35,45,42,54,49,56,63].include?(@current_position - move) && (1..64).include?(move)
 			return false
 		end
 
 		def legal_list(move)
 			list = []
 			check = @current_position
-			puts move - @current_position
 			if move - @current_position > 0
 				if [7,14,21,28,35,42,49,56].include?(move - @current_position)
 					until check == move-7

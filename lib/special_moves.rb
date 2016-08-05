@@ -1,27 +1,29 @@
 module SpecialMoves
 
-	def promote_piece
+	def promote(from, to)
+		promote_piece(from, to)
+		promote_move(from, to)
+	end
+
+	def promote_piece(from, to)
 		print "Pick a piece you would like to promote your pawn to: "
-		piece = gets.chomp.downcase.capitalize
-		case piece
-		when "Pawn" then piece = @board.board[from.join.to_sym].white ? Pieces::Pawn.new(true) : Pieces::Pawn.new
-		when "Bishop" then piece = @board.board[from.join.to_sym].white ? Pieces::Bishop.new(true) : Pieces::Bishop.new
-		when "Rook" then piece = @board.board[from.join.to_sym].white ? Pieces::Rook.new(true) : Pieces::Rook.new
-		when "Knight" then piece = @board.board[from.join.to_sym].white ? Pieces::Knight.new(true) : Pieces::Knight.new
-		when "Queen" then piece = @board.board[from.join.to_sym].white ? Pieces::Queen.new(true) : Pieces::Queen.new
+		@piece = gets.chomp.downcase.capitalize
+		case @piece
+		when "Pawn" then @piece = @board.board[from.join.to_sym].white ? Pieces::Pawn.new(true) : Pieces::Pawn.new
+		when "Bishop" then @piece = @board.board[from.join.to_sym].white ? Pieces::Bishop.new(true) : Pieces::Bishop.new
+		when "Rook" then @piece = @board.board[from.join.to_sym].white ? Pieces::Rook.new(true) : Pieces::Rook.new
+		when "Knight" then @piece = @board.board[from.join.to_sym].white ? Pieces::Knight.new(true) : Pieces::Knight.new
+		when "Queen" then @piece = @board.board[from.join.to_sym].white ? Pieces::Queen.new(true) : Pieces::Queen.new
+		else
+			promote_piece(from, to)
 		end
 	end
 
 	def promote_move(from, to)
 		to_cloned = to.clone
-		@board.board[to.join.to_sym] = piece
+		@board.board[to.join.to_sym] = @piece
 		@board.board[to.join.to_sym].current_position = convert(to_cloned)
 		@board.board[from.join.to_sym] = " "
-	end
-
-	def promote(from, to)
-		promote_piece
-		promote_move
 	end
 
 	def castle (from, to)

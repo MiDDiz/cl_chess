@@ -11,7 +11,6 @@ class Game
 		@board = Board.new
 		@turns = 0
 		@over = false
-		@check = 0
 		options
 		new_or_saved
 	end
@@ -56,10 +55,12 @@ class Game
 	end
 
 	def welcome
-		puts "======================================================="
-		puts "Welcome to the command-line chess! You know the rules!"
+		puts "=================================================="
+		puts "Welcome to the command-line chess!".center(50)
+		puts "In order to save and quit, type 'e0' as your move!".center(50)
+		puts "You know the rules!".center(50)
 		puts "So hop on and have fun!".center(50)
-		puts "======================================================="
+		puts "=================================================="
 	end
 
 	def player_name
@@ -169,7 +170,6 @@ class Game
 		whose_turn
 		play_piece
 		@board.display
-		check_mate
 		turn
 	end
 
@@ -205,17 +205,9 @@ class Game
 				pawn_play(from, to)
 			elsif @board.board[from.join.to_sym].legal_move?(convert(to_cloned))
 				if @board.board[from.join.to_sym].class == Pieces::Knight
-					if from[1] != to[1]
-						place_piece(from, to)
-					else
-						invalid_move
-					end
+					knight_play(from, to)
 				elsif @board.board[from.join.to_sym].class == Pieces::King || @board.board[from.join.to_sym].legal_list(convert(to_cloned)).all? { |n| @board.board[convert_back(n).join.to_sym] == " " }
-					if @board.board[from.join.to_sym].class == Pieces::Rook
-						castle(from, to)
-					else
-						place_piece(from, to)
-					end
+					rook_play(from, to)
 				else
 					invalid_move
 				end
@@ -227,19 +219,40 @@ class Game
 		end
 	end
 
+	def knight_play(from, to)
+		if from[1] != to[1]
+			place_piece(from, to)
+		else
+			invalid_move
+		end
+	end
+
+	def rook_play(from, to)
+		if @board.board[from.join.to_sym].class == Pieces::Rook
+			castle(from, to)
+		else
+			place_piece(from, to)
+		end
+	end
+
 	def pawn_play(from, to)
 		from_cloned = from.clone
 		to_cloned = to.clone
 		if !@board.board[from.join.to_sym].legal_move?(convert(to_cloned))
 			pawn_capture(from, to)
 		elsif @board.board[from.join.to_sym].legal_move?(convert(to_cloned)) && @board.board[to.join.to_sym] == " "
-			if [1,2,3,4,5,6,7,8,57,58,59,60,61,62,63,64].include?(convert(to_cloned))
-				promote(from, to)
-			else
-				place_piece(from, to)
-			end
+			pawn_promote(from, to)
 		else
 			invalid_move
+		end
+	end
+
+	def pawn_promote(from, to)
+		to_cloned = to.clone
+		if [1,2,3,4,5,6,7,8,57,58,59,60,61,62,63,64].include?(convert(to_cloned))
+			promote(from, to)
+		else
+			place_piece(from, to)
 		end
 	end
 
@@ -321,15 +334,12 @@ class Game
 	def when_check
 		get_move_while_check
 		while_check
-		if forfeit?
-			check_mate
-		else
-			out_of_check
-		end
+		out_of_check
 	end
 
 	def while_check
 		while still_check?(@from, @to)
+			game_over if checkmate?
 			get_move_while_check
 		end
 	end
@@ -369,11 +379,32 @@ class Game
 		end
 	end
 
-	def check_mate
-		if @checkmate
-			puts "Checkmate! #{@turns.odd? ? "White" : "Black"} wins!"
-			exit
+	def checkmate?
+		board = @board.board
+		board.each do |key, value|
+			if value.class == Pieces::King
+				if value.legal_move_list.all? { |m| board[convert_back(value.current_position + m).join.to_sym] != " "}
+					value.legal_move_list.each do |m|
+						if !board[convert_back(value.current_position + m).join.to_sym].nil? && board[convert_back(value.current_position + m).join.to_sym].white != value.white
+							if still_check?(convert_back(value.current_position), convert_back(value.current_position + m))
+								return true
+							else
+								return false
+							end
+						end
+					end
+				elsif value.legal_move_list.all? { |m| still_check?(convert_back(value.current_position), convert_back(value.current_position + m)) }
+					return true
+				else
+					return false
+				end
+			end
 		end
+	end
+
+	def game_over
+		puts @turns.odd? ? "Checkmate! White Wins!" : "Checkmate! Black Wins!"
+		exit
 	end
 end
 
