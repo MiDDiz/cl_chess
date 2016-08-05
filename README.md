@@ -2,6 +2,8 @@
 
 Prepared for The Odin Project's Ruby Final Project
 
+### In order to play, cd to the lib folder and run 'ruby game.rb'
+
 ## Complete with all the special moves (en passant, castling, promotion)
 	
 	* You will be prompted if you want to castle or do en passant when the correct situation occurs.
