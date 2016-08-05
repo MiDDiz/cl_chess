@@ -30,8 +30,8 @@ Prepared for The Odin Project's Ruby Final Project
 
 PLEASE: Let me know if there are any bugs you notice!
 
-![Starting Screen](ShalaQweghen.github.com/final/blob/master/img/1.png)
+![Starting Screen](https://github.com/ShalaQweghen/final/blob/master/img/1.png)
 
-![Initial Board](ShalaQweghen.github.com/final/blob/master/img/2.png)
+![Initial Board](https://github.com/ShalaQweghen/final/blob/master/img/2.png)
 
-![Board during the game](ShalaQweghen.github.com/final/blob/master/img/3.png)
+![Board during the game](https://github.com/ShalaQweghen/final/blob/master/img/3.png)
