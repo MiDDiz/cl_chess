@@ -4,7 +4,11 @@ module Technical
 	class InvalidMove < Exception
 	end
 
-	def invalid_move
+	def ai_invalid
+		start
+	end
+
+	def human_invalid
 		begin
 			raise InvalidMove
 		rescue InvalidMove
@@ -13,6 +17,14 @@ module Technical
 			puts "The specified piece is not allowed to make that move!"
 			puts "======================================================"
 			start
+		end
+	end
+
+	def invalid_move
+		if @response
+			human_invalid
+		else
+			@turns.odd? ? ai_invalid : human_invalid
 		end
 	end
 

@@ -155,7 +155,7 @@ class Game
 
 	def start
 		begin
-			@board.display
+			@board.display if @turns == 0
 			until @check_mate
 				proceed
 			end

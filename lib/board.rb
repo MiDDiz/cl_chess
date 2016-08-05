@@ -45,7 +45,7 @@ class Board
 		rows.each do |row|
 			print "#{row_number} "
 			row.each do |value|
-				if row_counter.odd?
+				if !row_counter.odd?
 					if square_counter.odd?
 						print "#{@hor}\u2593#{value != " " ? value.sign : "\u2593"}\u2593"
 					else
