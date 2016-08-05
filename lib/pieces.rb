@@ -17,7 +17,7 @@ module Pieces
 
 		def initialize(white=false)
 			super
-			@sign = white ? "\u265F" : "\u2659"
+			@sign = white ? "\u2659" : "\u265F"
 			@legal_move_list = [7,9]
 			@en_passant_valid = false
 		end
@@ -44,7 +44,7 @@ module Pieces
 
 		def initialize(white=false)
 			super
-			@sign = white ? "\u265C" : "\u2656"
+			@sign = white ? "\u2656" : "\u265C"
 			@legal_move_list = [-1,-2,-3,-4,-5,-6,-7,-8,-16,-24,-32,-40,-48,-56,1,2,3,4,5,6,7,8,16,24,32,40,48,56]
 		end
 
@@ -110,7 +110,7 @@ module Pieces
 
 		def initialize(white=false)
 			super
-			@sign = white ? "\u265E" : "\u2658"
+			@sign = white ? "\u2658" : "\u265E"
 			@legal_move_list = [-6,-10,-15,-17,6,10,15,17]
 		end
 
@@ -125,7 +125,7 @@ module Pieces
 
 		def initialize(white=false)
 			super
-			@sign = white ? "\u265D" : "\u2657"
+			@sign = white ? "\u2657" : "\u265D"
 			@legal_move_list = [-7,-9,-14,-18,-21,-27,-28,-36,-35,-45,-42,-54,-49,-56,-63,7,9,14,18,21,27,28,36,35,45,42,54,49,56,63]
 		end
 
@@ -171,7 +171,7 @@ module Pieces
 
 		def initialize(white=false)
 			super
-			@sign = white ? "\u265A" : "\u2654"
+			@sign = white ? "\u2654" : "\u265A"
 			@legal_move_list = [-1,-7,-8,-9,1,7,8,9]
 		end
 
@@ -186,7 +186,7 @@ module Pieces
 
 		def initialize(white=false)
 			super
-			@sign = white ? "\u265B" : "\u2655"
+			@sign = white ? "\u2655" : "\u265B"
 			@legal_move_list = [-1,-2,-3,-4,-5,-6,-7,-8,-9,-14,-16,-18,-21,-24,-27,-28,-32,-35,-36,-40,-42,-45,-48,-49,-54,-56,-62,-63,-64,1,2,3,4,5,6,7,8,9,14,16,18,21,24,27,28,32,35,36,40,42,45,48,49,54,56,62,63,64]
 		end
 
