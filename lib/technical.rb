@@ -16,7 +16,7 @@ module Technical
 			puts "!!! INVALID MOVE !!!".center(50)
 			puts "The specified piece is not allowed to make that move!"
 			puts "======================================================"
-			@invalid = true
+			@invalid = true unless @response
 			start
 		end
 	end
