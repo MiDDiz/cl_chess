@@ -50,20 +50,16 @@ module Pieces
 
 		def legal_move?(move)
 			if (move - @current_position) > 0 && (move - @current_position) < 8
-				[1,2,3,4,5,6,7].each do |n|
-					[(1..8),(9..16),(17..24),(25..32),(33..40),(41..48),(49..56),(57..64)].each do |range|
-						if range.include?(@current_position) && range.include?(@current_position + n)
-							return true
-						end
+				[(1..8),(9..16),(17..24),(25..32),(33..40),(41..48),(49..56),(57..64)].each do |range|
+					if range.include?(@current_position) && range.include?(@current_position + (move - @current_position))
+						return true
 					end
 				end
 				return false
 			elsif (move - @current_position) < 0 && (move - @current_position) > -8
-				[1,2,3,4,5,6,7].each do |n|
-					[(57..64),(49..56),(41..48),(33..40),(25..32),(17..24),(9..16),(1..8)].each do |range|
-						if range.include?(@current_position) && range.include?(@current_position - n)
-							return true
-						end
+				[(57..64),(49..56),(41..48),(33..40),(25..32),(17..24),(9..16),(1..8)].each do |range|
+					if range.include?(@current_position) && range.include?(@current_position - (@current_position - move))
+						return true
 					end
 				end
 				return false
@@ -188,24 +184,16 @@ module Pieces
 
 		def legal_move?(move)
 			if (move - @current_position) > 0 && (move - @current_position) < 8
-				limiter = 8
-				[1,2,3,4,5,6,7].each do |n|
-					[(1..8),(9..16),(17..23),(25..31),(33..39),(41..47),(49..55),(57..63)].each do |range|
-						if range.include?(@current_position) && @current_position + n <= limiter
-							return true
-						end
-						limiter += 8
+				[(1..8),(9..16),(17..24),(25..32),(33..40),(41..48),(49..56),(57..64)].each do |range|
+					if range.include?(@current_position) && range.include?(@current_position + (move - @current_position))
+						return true
 					end
 				end
 				return false
 			elsif (move - @current_position) < 0 && (move - @current_position) > -8
-				limiter = 57
-				[1,2,3,4,5,6,7].each do |n|
-					[(57..64),(49..56),(41..48),(33..40),(25..32),(17..24),(9..16),(1..7)].each do |range|
-						if range.include?(@current_position) && @current_position + n >= limiter
-							return true
-						end
-						limiter -= 8
+				[(57..64),(49..56),(41..48),(33..40),(25..32),(17..24),(9..16),(1..8)].each do |range|
+					if range.include?(@current_position) && range.include?(@current_position - (@current_position - move))
+						return true
 					end
 				end
 				return false

@@ -11,6 +11,7 @@ class Game
 		@board = Board.new
 		@turns = 0
 		@over = false
+		@invalid = false
 		options
 		new_or_saved
 	end
@@ -57,8 +58,9 @@ class Game
 	def welcome
 		puts "=================================================="
 		puts "Welcome to the command-line chess!".center(50)
-		puts "In order to save and quit, type 'e0' as your move!".center(50)
-		puts "You know the rules!".center(50)
+		puts "In order to save and quit, type 'e0' as your move.".center(50)
+		puts "Please read README for more info.".center(50)
+		puts "You know the rules.".center(50)
 		puts "So hop on and have fun!".center(50)
 		puts "=================================================="
 	end
@@ -98,13 +100,17 @@ class Game
 	end
 
 	def whose_turn
-		puts "\n#{@player_1.name} has the white pieces. #{@player_2.name} has the black pieces." if @turns.zero?
-		puts @turns.odd? ? "\nIt is Black's turn!" : "\nIt is White's turn!"
+		unless @invalid
+			puts "\n#{@player_1.name} has the white pieces. #{@player_2.name} has the black pieces." if @turns.zero?
+			puts @turns.odd? ? "\nIt is Black's turn!" : "\nIt is White's turn!"
+		end
 	end
 
 	def show_move
-		puts "From : #{@player_2.from.join unless @player_2.from.nil?}"
-		puts "To   : #{@player_2.to.join unless @player_2.to.nil?}"
+		unless @invalid
+			puts "From : #{@player_2.from.join unless @player_2.from.nil?}"
+			puts "To   : #{@player_2.to.join unless @player_2.to.nil?}"
+		end
 	end
 
 	def human_play
@@ -121,7 +127,6 @@ class Game
 		else
 			@from = @player_2.ai_from(@board.board)
 			@to = @player_2.ai_to(@board.board)
-			show_move if !@response && @turns.odd?
 		end
 	end
 
@@ -167,7 +172,7 @@ class Game
 	def proceed
 		puts "#{@turns.odd? ? "Black" : "White"} check!" if check?(@board.board)
 		en_passant
-		whose_turn
+		whose_turn if @response || (!@response && !@turns.odd?)
 		play_piece
 		@board.display
 		turn
@@ -186,20 +191,25 @@ class Game
 	def movement
 		begin
 			unless valid_move?(@from, @to)
-				puts "a"
 				invalid_move
 			end
 			if correct_color?(@from)
 				en_passant_turn(@from, @to)
 				play(@from, @to)
 			else
-				puts "b"
 				invalid_move
 			end
+			ai_info unless @response
 		rescue NoMethodError
 			error_info
 			start
 		end
+	end
+
+	def ai_info
+		whose_turn if !@response && @turns.odd?
+		show_move if (!@response && @turns.odd?) && !@invalid
+		@invalid = false
 	end
 
 	def play(from, to)
@@ -213,15 +223,12 @@ class Game
 				elsif @board.board[from.join.to_sym].class == Pieces::King || @board.board[from.join.to_sym].legal_list(convert(to_cloned)).all? { |n| @board.board[convert_back(n).join.to_sym] == " " }
 					rook_play(from, to)
 				else
-					puts "c"
 					invalid_move
 				end
 			else
-				puts "d"
 				invalid_move
 			end
 		else
-			puts "e"
 			invalid_move
 		end
 	end
@@ -230,7 +237,6 @@ class Game
 		if from[1] != to[1]
 			place_piece(from, to)
 		else
-			puts "f"
 			invalid_move
 		end
 	end
@@ -251,7 +257,6 @@ class Game
 		elsif @board.board[from.join.to_sym].legal_move?(convert(to_cloned)) && @board.board[to.join.to_sym] == " "
 			pawn_promote(from, to)
 		else
-			puts "g"
 			invalid_move
 		end
 	end
@@ -275,7 +280,6 @@ class Game
 				place_piece(from, to)
 			end
 		else
-			puts "h"
 			invalid_move
 		end
 	end
@@ -289,7 +293,6 @@ class Game
 			@board.board[to.join.to_sym].current_position = convert(to_cloned)
 			@board.board[from.join.to_sym] = " "
 		else
-			puts "i"
 			invalid_move
 		end
 	end
@@ -308,10 +311,8 @@ class Game
 		board[from.join.to_sym] = " "
 		if check?(board)
 			if !@turns.odd? && board[to.join.to_sym].white
-				puts "1"
 				return true
 			elsif @turns.odd? && !board[to.join.to_sym].white
-				puts "2"
 				return true
 			else
 				return false
@@ -329,14 +330,11 @@ class Game
 						if board[convert_back(value.current_position + n).join.to_sym].white != value.white
 							if value.class != Pieces::Knight
 								if value.class == Pieces::Pawn
-									puts "3"
 									return true
 								elsif value.legal_move?(value.current_position + n) && value.legal_list(value.current_position + n).all? { |x| board[convert_back(x).join.to_sym] == " " }
-									puts 4
 									return true
 								end
 							elsif value.legal_move?(value.current_position + n)
-								puts 5
 								return true
 							end
 						end
@@ -416,6 +414,7 @@ class Game
 				end
 			end
 		end
+		return false
 	end
 
 	def game_over

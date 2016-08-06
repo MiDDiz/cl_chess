@@ -16,6 +16,7 @@ module Technical
 			puts "!!! INVALID MOVE !!!".center(50)
 			puts "The specified piece is not allowed to make that move!"
 			puts "======================================================"
+			@invalid = true
 			start
 		end
 	end
@@ -149,6 +150,7 @@ module Technical
 		@en_passant_turns = config[:en_passant_turns]
 		@response = config[:response]
 		system("clear")
+		@board.display
 		start
 	end
 
