@@ -185,11 +185,15 @@ class Game
 
 	def movement
 		begin
-			invalid_move unless valid_move?(@from, @to)
+			unless valid_move?(@from, @to)
+				puts "a"
+				invalid_move
+			end
 			if correct_color?(@from)
 				en_passant_turn(@from, @to)
 				play(@from, @to)
 			else
+				puts "b"
 				invalid_move
 			end
 		rescue NoMethodError
@@ -209,12 +213,15 @@ class Game
 				elsif @board.board[from.join.to_sym].class == Pieces::King || @board.board[from.join.to_sym].legal_list(convert(to_cloned)).all? { |n| @board.board[convert_back(n).join.to_sym] == " " }
 					rook_play(from, to)
 				else
+					puts "c"
 					invalid_move
 				end
 			else
+				puts "d"
 				invalid_move
 			end
 		else
+			puts "e"
 			invalid_move
 		end
 	end
@@ -223,6 +230,7 @@ class Game
 		if from[1] != to[1]
 			place_piece(from, to)
 		else
+			puts "f"
 			invalid_move
 		end
 	end
@@ -243,6 +251,7 @@ class Game
 		elsif @board.board[from.join.to_sym].legal_move?(convert(to_cloned)) && @board.board[to.join.to_sym] == " "
 			pawn_promote(from, to)
 		else
+			puts "g"
 			invalid_move
 		end
 	end
@@ -266,6 +275,7 @@ class Game
 				place_piece(from, to)
 			end
 		else
+			puts "h"
 			invalid_move
 		end
 	end
@@ -279,6 +289,7 @@ class Game
 			@board.board[to.join.to_sym].current_position = convert(to_cloned)
 			@board.board[from.join.to_sym] = " "
 		else
+			puts "i"
 			invalid_move
 		end
 	end
@@ -297,8 +308,10 @@ class Game
 		board[from.join.to_sym] = " "
 		if check?(board)
 			if !@turns.odd? && board[to.join.to_sym].white
+				puts "1"
 				return true
 			elsif @turns.odd? && !board[to.join.to_sym].white
+				puts "2"
 				return true
 			else
 				return false
@@ -316,11 +329,14 @@ class Game
 						if board[convert_back(value.current_position + n).join.to_sym].white != value.white
 							if value.class != Pieces::Knight
 								if value.class == Pieces::Pawn
+									puts "3"
 									return true
 								elsif value.legal_move?(value.current_position + n) && value.legal_list(value.current_position + n).all? { |x| board[convert_back(x).join.to_sym] == " " }
+									puts 4
 									return true
 								end
 							elsif value.legal_move?(value.current_position + n)
+								puts 5
 								return true
 							end
 						end

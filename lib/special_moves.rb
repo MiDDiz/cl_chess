@@ -32,10 +32,10 @@ module SpecialMoves
 		unless @board.board[from.join.to_sym].moved && check?(@board.board)
 			if @board.board[convert_back(convert(to_cloned) + 1).join.to_sym].class == Pieces::King && !@board.board[convert_back(convert(to_cloned) + 1).join.to_sym].moved
 				place_piece(from, to)
-				place_piece(convert_back(convert(to_cloned) + 1), convert_back(convert(from_cloned) + 1)) if castling?
+				place_piece(convert_back(convert(to_cloned) + 1), convert_back(convert(from_cloned) + 2)) if castling?
 			elsif @board.board[convert_back(convert(to_cloned) - 1).join.to_sym].class == Pieces::King && !@board.board[convert_back(convert(to_cloned) - 1).join.to_sym].moved
 				place_piece(from, to)
-				place_piece(convert_back(convert(to_cloned) - 1), convert_back(convert(from_cloned) - 2)) if castling?
+				place_piece(convert_back(convert(to_cloned) - 1), convert_back(convert(from_cloned) - 1)) if castling?
 			else
 				place_piece(from, to)
 			end
