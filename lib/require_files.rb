@@ -1,0 +1,5 @@
+require_relative "board.rb"
+require_relative "players.rb"
+require_relative "special_moves.rb"
+require_relative "game_start.rb"
+require_relative "game_flow.rb"

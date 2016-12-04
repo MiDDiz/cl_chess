@@ -16,13 +16,13 @@ module Technical
 			puts "!!! INVALID MOVE !!!".center(50)
 			puts "The specified piece is not allowed to make that move!"
 			puts "======================================================"
-			@invalid = true unless @response
+			@is_invalid = true unless @is_human
 			start
 		end
 	end
 
-	def invalid_move
-		if @response
+	def raise_invalid_move
+		if @is_human
 			human_invalid
 		else
 			@turns.odd? ? ai_invalid : human_invalid
@@ -53,7 +53,8 @@ module Technical
 		puts "======================================================================"
 	end
 
-	def convert(move)
+	# Converts hash key to number
+	def convert_to_number(move)
 		unless move.nil?
 			case move[0]
 			when "a" then move[0] = 0
@@ -70,10 +71,13 @@ module Technical
 		end
 	end
 
-	def convert_back(move)
+	# Converts number to hash key
+	def convert_to_key(move)
 		if [8,16,24,32,40,48,56,64].include?(move)
 			move_0 = "h"
 			move_1 = (move) / 8
+		elsif move.class == String
+			return move
 		else
 			move_0 = ((move) % 8) - 1
 			move_1 = ((move) / 8) + 1
@@ -92,6 +96,7 @@ module Technical
 		return move
 	end
 
+	# Changes the number to letter
 	def change(number)
 		case number
 		when 0 then number = "a"
@@ -106,20 +111,22 @@ module Technical
 		return number
 	end
 
-	def options
-		if Dir.exists?("../saves")
+	def give_options
+		if Dir.exists?("saves")
+			system("clear")
+			sleep 1
 			puts "Would you like to load a saved game?(y/n)"
-			@choice = gets.chomp
+			@start_saved_game = gets.chomp.downcase
 		end
 	end
 
-	def new_or_saved
-		if @choice == "y"
+	def new_or_saved?
+		if @start_saved_game == "y"
 			print "Enter White Player's name: "
 			@name_1 = gets.chomp.downcase.capitalize
 			print "Enter Black Player's name: "
 			@name_2 = gets.chomp.downcase.capitalize
-			load_or_new
+			load_or_new?
 		else
 			intro
 			start
@@ -127,28 +134,24 @@ module Technical
 	end
 
 	def save
-		config = {player_1: @player_1, player_2: @player_2, board: @board, turns: @turns, en_passant_turns: @en_passant_turns, response: @response}
-		Dir.mkdir("../saves") unless Dir.exists?("../saves")
-		File.open("../saves/#{@player_1.name + "_vs_" +@player_2.name}.txt", "w") { |file| file.puts(YAML::dump(config)) }
+		config = {player_1: @player_1, player_2: @player_2, board: @board, turns: @turns, en_passant_turns: @en_passant_turns, is_human: @is_human}
+		Dir.mkdir("saves") unless Dir.exists?("saves")
+		File.open("saves/#{@player_1.name + "_vs_" +@player_2.name}.txt", "w") { |file| file.puts(YAML::dump(config)) }
 	end
 
-	def load_or_new
-		if File.exist?("../saves/#{@name_1 + "_vs_" +@name_2}.txt")
-			load_game
-		else
-			new_game
-		end
+	def load_or_new?
+		File.exist?("saves/#{@name_1 + "_vs_" +@name_2}.txt") ? load_game : new_game
 	end
 
 	def load_game
-		file = File.read("../saves/#{@name_1 + "_vs_" +@name_2}.txt")
+		file = File.read("saves/#{@name_1 + "_vs_" +@name_2}.txt")
 		config = YAML::load(file)
 		@player_1 = config[:player_1]
 		@player_2 = config[:player_2]
 		@board = config[:board]
 		@turns = config[:turns]
 		@en_passant_turns = config[:en_passant_turns]
-		@response = config[:response]
+		@is_human = config[:is_human]
 		system("clear")
 		@board.display
 		start

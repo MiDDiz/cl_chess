@@ -17,37 +17,37 @@ class Board
 	end
 
 	def split_rows
-		@board.values.each_slice(8).to_a
+		board.values.each_slice(8).to_a
 	end
 
-	def blocks
-		@t_line = "\u2550\u2550\u2550\u2566"
-		@m_line = "\u2550\u2550\u2550\u256C"
-		@b_line = "\u2550\u2550\u2550\u2569"
-		@hor = "\u2551"
-		@ver = "\u2550"
-		@lcu = "\u2554"
-		@rcu = "\u2557"
-		@lcm = "\u2560"
-		@rcm = "\u2563"
-		@lcd = "\u255A"
-		@rcd = "\u255D"
+	def set_blocks
+		@t_line = "\u2550\u2550\u2550\u2566" 	# Top line of the board
+		@m_line = "\u2550\u2550\u2550\u256C"	# Middle lines of the board
+		@b_line = "\u2550\u2550\u2550\u2569"	# Bottom line of the board
+		@hor = "\u2551"		# Horizantal lines
+		@ver = "\u2550"		# Vertical lines
+		@ltc = "\u2554"		# Left top center piece
+		@rtc = "\u2557"		# Right top center piece
+		@lmc = "\u2560"		# Left middle center piece
+		@rmc = "\u2563"		# Right middle center piece
+		@lbc = "\u255A"		# Left bottom center piece
+		@rbc = "\u255D"		# Right bottom center piece
 	end
 
 	def display
-		blocks
+		set_blocks
 		rows = split_rows.reverse
 		row_number = 8
 		row_counter = 1
 		square_counter = 1
 		puts "    a   b   c   d   e   f   g   h"
-		puts "  #{@lcu+@t_line+@t_line+@t_line+@t_line+@t_line+@t_line+@t_line+@ver+@ver+@ver+@rcu}"
+		puts "  #{@ltc+@t_line+@t_line+@t_line+@t_line+@t_line+@t_line+@t_line+@ver+@ver+@ver+@rtc}"
 		rows.each do |row|
 			print "#{row_number} "
 			row.each do |value|
-				if !row_counter.odd?
+				unless row_counter.odd?
 					if square_counter.odd?
-						print "#{@hor}\u2593#{value != " " ? value.sign : "\u2593"}\u2593"
+						print "#{@hor}\u2593#{value != " " ? value.sign + " ": "\u2593\u2593"}"
 					else
 						print "#{@hor} #{value != " " ? value.sign : " "} "
 					end
@@ -55,7 +55,7 @@ class Board
 					if square_counter.odd?
 						print "#{@hor} #{value != " " ? value.sign : " "} "
 					else
-						print "#{@hor}\u2593#{value != " " ? value.sign : "\u2593"}\u2593"
+						print "#{@hor}\u2593#{value != " " ? value.sign + " ": "\u2593\u2593"}"
 					end
 				end
 				square_counter += 1
@@ -64,9 +64,9 @@ class Board
 			print "#{@hor} #{row_number}"
 			row_number -= 1
 			if row_number > 0
-				puts "\n  #{@lcm+@m_line+@m_line+@m_line+@m_line+@m_line+@m_line+@m_line+@ver+@ver+@ver+@rcm}"
+				puts "\n  #{@lmc+@m_line+@m_line+@m_line+@m_line+@m_line+@m_line+@m_line+@ver+@ver+@ver+@rmc}"
 			else
-				puts "\n  #{@lcd+@b_line+@b_line+@b_line+@b_line+@b_line+@b_line+@b_line+@ver+@ver+@ver+@rcd}"
+				puts "\n  #{@lbc+@b_line+@b_line+@b_line+@b_line+@b_line+@b_line+@b_line+@ver+@ver+@ver+@rbc}"
 			end
 		end
 		puts "    a   b   c   d   e   f   g   h"

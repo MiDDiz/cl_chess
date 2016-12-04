@@ -2,7 +2,7 @@
 
 Prepared for The Odin Project's Ruby Final Project
 
-### In order to play, cd to the lib folder and run 'ruby game.rb'
+### In order to play, run 'ruby game.rb' in your terminal or require game.rb in an irb session.
 
 ## Complete with all the special moves (en passant, castling, promotion)
 	
@@ -29,9 +29,3 @@ Prepared for The Odin Project's Ruby Final Project
 	* Tests
 
 PLEASE: Let me know if there are any bugs you notice!
-
-![Starting Screen](https://github.com/ShalaQweghen/final/blob/master/img/1.png)
-
-![Initial Board](https://github.com/ShalaQweghen/final/blob/master/img/2.png)
-
-![Board during the game](https://github.com/ShalaQweghen/final/blob/master/img/3.png)
