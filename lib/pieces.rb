@@ -1,48 +1,79 @@
 module Pieces
 
 	class Piece
-		attr_accessor :current_position, :moved, :times_moved
-		attr_reader :sign, :is_white, :legal_move_list
+		attr_accessor :moved
+		attr_reader :sign, :white
 
 		def initialize(white=false)
-			@current_position = nil
-			@is_white = white
-			@moved = false
-			@times_moved = 0
+			@white = white
+			@moved = false			# Necessary for both castling and enpassant	
 		end
 
-		def is_within_board?(move)
-			return (1..64).include?(move) ? true : false
+		private
+
+		# _legal? methods check the characters of the board key symbols to determine the validity of a move.
+		def str_legal?(from, to)
+			return true if from[0] == to[0] && from[1] != to[1] # The squares on the same column share the same letter
+			return true if from[0] != to[0] && from[1] == to[1] # The squares on the same row share the same number
+		end
+
+		def dia_legal?(from, to)
+			# The difference of the letters and that of the numbers of two diagonally aligned squares are the same.
+			return true if (from[0].ord - to[0].ord).abs == (from[1].ord - to[1].ord).abs
+		end
+
+		# _line methods increment or decrement the key symbol characters to adjust the position of the piece played 
+		# according to the destination. Changing the letter moves the piece horizontally, changing the number moves
+		# piece vertically and changing both at the same time moves the piece diagonally.
+		def hor_line(from, to)
+			if from != to
+				from = from.to_s.chars 					# Makes an array of the key symbol characters to be modified
+				if from[0] < to[0]						# Goes to right (the key letter of the piece played is smaller)
+					from[0] = from[0].next				# Increments the ascii value of the letter
+				elsif from[0] > to[0]					# Goes to left (the key letter of the piece played is bigger)
+					from[0] = (from[0].ord.pred).chr 	# Decrements the ascii value of the letter
+				end
+				return from.join.to_sym
+			end
+		end
+
+		def ver_line(from, to)
+			if from != to
+				from = from.to_s.chars 					# Makes an array of the key symbol characters to be modified
+				if from[1] < to[1]						# Goes upwards (the key number of the piece played is smaller)
+					from[1] = (from[1].to_i + 1).to_s 	# Increments the value of the number
+				elsif from[1] > to[1]					# Goes downwards (the key number of the piece played is bigger)
+					from[1] = (from[1].to_i - 1).to_s 	# Decrements the value of the number
+				end
+				return from.join.to_sym
+			end
+		end
+
+		def dia_line(from, to)
+			return ver_line(hor_line(from, to), to) if from != to # Changes both the letter and the number at the same time
 		end
 	end
 
 	class Pawn < Piece
-		attr_accessor :en_passant_valid
+		attr_accessor :en_passant_valid		# Necessary for marking the piece for enpassant move
 
 		def initialize(white=false)
 			super
 			@sign = white ? "\u2659" : "\u265F"
-			@legal_move_list = [7,9]
 			@en_passant_valid = false
 		end
 
-		def is_legal_move?(move)
-			unless moved
-				if is_within_board?(move)
-					if is_white
-						return true if [8, 16].include?(move - current_position)
-					else
-						return true if [8, 16].include?(current_position - move)
-					end
-				end
-			else 
-				if is_white
-					return true if move - current_position == 8 && move - current_position >= 0
-				else
-					return true if current_position - move == 8 && current_position - move >= 0
-				end
+		# Checks the validity by checking the differences of the letter and number values of the key symbols.
+		# Difference of 1 for numbers (if it's white's turn, else the difference should be -1) and that of 0
+		# for letters is valid. The moved flag should be false for the second square jump. 
+		def legal_move?(from, to)
+			if from[0].ord - to[0].ord == 0 && from[1].ord - to[1].ord == 1 && !@white
+				return true
+			elsif from[0].ord - to[0].ord == 0 && from[1].ord - to[1].ord == -1 && @white
+				return true
+			elsif from[0].ord - to[0].ord == 0 && (from[1].ord - to[1].ord).abs == 2 && !moved
+				return true
 			end
-			return false
 		end
 	end
 
@@ -51,58 +82,25 @@ module Pieces
 		def initialize(white=false)
 			super
 			@sign = white ? "\u2656" : "\u265C"
-			@legal_move_list = [-1,-2,-3,-4,-5,-6,-7,-8,-16,-24,-32,-40,-48,-56,1,2,3,4,5,6,7,8,16,24,32,40,48,56]
 		end
 
-		def is_legal_move?(move)
-			if (move - current_position) > 0 && (move - current_position) < 8
-				[(1..8),(9..16),(17..24),(25..32),(33..40),(41..48),(49..56),(57..64)].each do |range|
-					if range.include?(current_position) && range.include?(move)
-						return true
-					end
-				end
-				return false
-			elsif (move - current_position) < 0 && (move - current_position) > -8
-				[(57..64),(49..56),(41..48),(33..40),(25..32),(17..24),(9..16),(1..8)].each do |range|
-					if range.include?(current_position) && range.include?(move)
-						return true
-					end
-				end
-				return false
-			else
-				if is_within_board?(move)
-					return true if [8,16,24,32,40,48,56].include?(move - current_position)
-					return true if [8,16,24,32,40,48,56].include?(current_position - move)
-				else
-					return false
-				end
-			end
+		def legal_move?(from, to)
+			return str_legal?(from, to)
 		end
 
-		def legal_list(move)
+		# Return a list of all the squares from the initial square of the move to and not including the destination
+		# square to check if the squares are occupied or not.
+		def legal_list(from, to)
 			list = []
-			check = current_position
-			if (move - current_position) > 0 && (move - current_position) < 8
-				until check == move-1
-					check += 1
-					list << check
+			until from == to
+				if from[1] < to[1] || from[1] > to[1]		# If the move is upwards or downwards (see ver_line for more info)
+					from = ver_line(from, to)
+				elsif from[0] < to[0] || from[0] > to[0]	# If the move is to the right or left (see hor_line for more info)
+					from = hor_line(from, to)
 				end
-			elsif (move - current_position) < 0 && (move - current_position) > -8
-				until check == move+1
-					check -= 1
-					list << check
-				end
-			elsif (move - current_position) >= 8
-				until check == move-8
-					check += 8
-					list << check
-				end
-			elsif (move - current_position) <= -8
-				until check == move+8
-					check -= 8
-					list << check
-				end
+				list << from
 			end
+			list.pop
 			return list
 		end
 	end
@@ -112,15 +110,16 @@ module Pieces
 		def initialize(white=false)
 			super
 			@sign = white ? "\u2658" : "\u265E"
-			@legal_move_list = [-6,-10,-15,-17,6,10,15,17]
 		end
 
-		def is_legal_move?(move)
-			if is_within_board?(move)
-				return true if [6,10,15,17].include?(move - current_position)
-				return true if [6,10,15,17].include?(current_position - move)
-			else
-				return false
+		# Checks the validity by checking the differences of the letter and number values of the key symbols.
+		# An absolute difference of 1 for numbers and that of 2 for letter and vice verca ared valid 
+		# for knight's L shaped move. An absolute difference because Knight can move back and forth.
+		def legal_move?(from, to)
+			if (from[0].ord - to[0].ord).abs == 1 && (from[1].ord - to[1].ord).abs == 2		# Vertical L
+				return true
+			elsif (from[0].ord - to[0].ord).abs == 2 && (from[1].ord - to[1].ord).abs == 1	# Horizontal L
+				return true
 			end
 		end
 	end
@@ -130,46 +129,21 @@ module Pieces
 		def initialize(white=false)
 			super
 			@sign = white ? "\u2657" : "\u265D"
-			@legal_move_list = [-7,-9,-14,-18,-21,-27,-28,-36,-35,-45,-42,-54,-49,-56,-63,7,9,14,18,21,27,28,36,35,45,42,54,49,56,63]
 		end
 
-		def is_legal_move?(move)
-			if is_within_board?(move)
-				return true if [7,9,14,18,21,27,28,36,35,45,42,54,49,56,63].include?(move - current_position)
-				return true if [7,9,14,18,21,27,28,36,35,45,42,54,49,56,63].include?(current_position - move)
-			else
-				return false
-			end
+		def legal_move?(from, to)
+			return dia_legal?(from, to)
 		end
 
-		def legal_list(move)
+		# Return a list of all the squares from the initial square of the move to and not including the destination
+		# square to check if the squares are occupied or not.
+		def legal_list(from, to)
 			list = []
-			check = current_position
-			if move - current_position > 0
-				if [7,14,21,28,35,42,49,56].include?(move - current_position)
-					until check == move-7
-						check += 7
-						list << check
-					end
-				else
-					until check == move-9
-						check += 9
-						list << check
-					end
-				end
-			else
-				if [7,14,21,28,35,42,49,56].include?(current_position - move)
-					until (move+7).abs == check
-						check -= 7
-						list << check
-					end
-				else
-					until (move+9).abs == check
-						check -= 9
-						list << check
-					end
-				end
+			until from == to
+				from = dia_line(from, to)
+				list << from
 			end
+			list.pop
 			return list
 		end
 	end
@@ -179,15 +153,18 @@ module Pieces
 		def initialize(white=false)
 			super
 			@sign = white ? "\u2654" : "\u265A"
-			@legal_move_list = [-1,-7,-8,-9,1,7,8,9]
 		end
 
-		def is_legal_move?(move)
-			if is_within_board?(move)
-				return true if [1,7,8,9].include?(move - current_position)
-				return true if [1,7,8,9].include?(current_position - move)
-			else
-				return false
+		# Checks the validity by checking the differences of the letter and number values of the key symbols.
+		# An absolute difference of 1 for numbers and that of 0 for letters is valid and vice versa, and so is the
+		# difference of 1 for both numbers and letter. An absolute difference because King can go back and forth. 
+		def legal_move?(from, to)
+			if from[0].ord - to[0].ord == 0 && (from[1].ord - to[1].ord).abs == 1				# Vertical move
+				return true
+			elsif (from[0].ord - to[0].ord).abs == 1 && from[1].ord - to[1].ord == 0			# Horizantal move
+				return true
+			elsif (from[0].ord - to[0].ord).abs == 1 && (from[1].ord - to[1].ord).abs == 1		# Diagonal move
+				return true
 			end
 		end
 	end
@@ -197,75 +174,28 @@ module Pieces
 		def initialize(white=false)
 			super
 			@sign = white ? "\u2655" : "\u265B"
-			@legal_move_list = [-1,-2,-3,-4,-5,-6,-7,-8,-9,-14,-16,-18,-21,-24,-27,-28,-32,-35,-36,-40,-42,-45,-48,-49,-54,-56,-62,-63,-64,1,2,3,4,5,6,7,8,9,14,16,18,21,24,27,28,32,35,36,40,42,45,48,49,54,56,62,63,64]
 		end
 
-		def is_legal_move?(move)
-			if (move - current_position) > 0 && (move - current_position) < 8
-				[(1..8),(9..16),(17..24),(25..32),(33..40),(41..48),(49..56),(57..64)].each do |range|
-					if range.include?(current_position) && range.include?(move)
-						return true
-					end
-				end
-			elsif (move - current_position) < 0 && (move - current_position) > -8
-				[(57..64),(49..56),(41..48),(33..40),(25..32),(17..24),(9..16),(1..8)].each do |range|
-					if range.include?(current_position) && range.include?(move)
-						return true
-					end
-				end
-			end
-			if is_within_board?(move)
-				return true if [7,8,9,14,16,18,21,24,27,28,32,35,36,40,42,45,48,49,54,56,62,63,64].include?(move - current_position)
-				return true if [7,8,9,14,16,18,21,24,27,28,32,35,36,40,42,45,48,49,54,56,62,63,64].include?(current_position - move)
-			else
-				return false
-			end
+		def legal_move?(from, to)
+			return dia_legal?(from, to) unless str_legal?(from, to)
+			return str_legal?(from, to) unless dia_legal?(from, to)
 		end
 
-		def legal_list(move)
+		# Return a list of all the squares from the initial square of the move to and not including the destination
+		# square to check if the squares are occupied or not.
+		def legal_list(from, to)
 			list = []
-			check = current_position
-			if [1,2,3,4,5,6].include?(move - current_position)
-				until check == move-1
-					check += 1
-					list << check
+			until from == to
+				if dia_legal?(from, to)						# If the move is diagonal (see dia_line for more info)
+					from = dia_line(from, to)
+				elsif from[1] < to[1] || from[1] > to[1]	# If the move is upwards or downwards (see ver_line for more info)
+					from = ver_line(from, to)
+				elsif from[0] < to[0] || from[0] > to[0]	# If the move is to left or to right (see hor_line for more info)
+					from = hor_line(from, to)
 				end
-			elsif [1,2,3,4,5,6].include?(current_position - move)
-				until check == move+1
-					check -= 1
-					list << check
-				end
-			elsif [8,16,24,32,40,48,56,64].include?(move - current_position)
-				until check == move-8
-					check += 8
-					list << check
-				end
-			elsif [8,16,24,32,40,48,56,64].include?(current_position - move)
-				until check == move+8
-					check -= 8
-					list << check
-				end
-			elsif [7,14,21,28,35,42,49,56,63].include?(move - current_position)
-				until check == move-7
-					check += 7
-					list << check
-				end
-			elsif [7,14,21,28,35,42,49,56,63].include?(current_position - move)
-				until check == move+7
-					check -= 7
-					list << check
-				end
-			elsif [9,18,27,36,45,54,63].include?(move - current_position)
-				until check == move-9
-					check += 9
-					list << check
-				end
-			elsif [9,18,27,36,45,54,63].include?(current_position - move)
-				until check == move+9
-					check -= 9
-					list << check
-				end
+				list << from
 			end
+			list.pop
 			return list
 		end
 	end

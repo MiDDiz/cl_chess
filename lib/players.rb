@@ -1,61 +1,56 @@
 require_relative "pieces.rb"
-require_relative "technical.rb"
 
 module Players
 
 	class Player
 		include Pieces
-		attr_accessor :name, :from, :to
+		attr_accessor :name, :from, :to, :move
 		attr_reader :pieces, :white
 
 		def initialize(white=false)
 			@name = "Comp"
 			@white = white
-			@pieces = { rook_1: Rook.new(white),
-						knight_1: Knight.new(white),
-						bishop_1: Bishop.new(white),
-						queen: Queen.new(white),
-						king: King.new(white),
-						bishop_2: Bishop.new(white),
-						knight_2: Knight.new(white),
-						rook_2: Rook.new(white),
-						pawn_1: Pawn.new(white),
-					    pawn_2: Pawn.new(white),
-					    pawn_3: Pawn.new(white),
-					    pawn_4: Pawn.new(white),
-					    pawn_5: Pawn.new(white),
-					    pawn_6: Pawn.new(white),
-					    pawn_7: Pawn.new(white),
-					    pawn_8: Pawn.new(white) }
+			@pieces = [Rook.new(white), Knight.new(white), Bishop.new(white), Queen.new(white), King.new(white),
+					   Bishop.new(white), Knight.new(white), Rook.new(white), Pawn.new(white), Pawn.new(white),
+					   Pawn.new(white), Pawn.new(white), Pawn.new(white), Pawn.new(white), Pawn.new(white), Pawn.new(white)]
 		end
 	end
 
 	class AI < Player
-		include Technical
 
-		def pick_move
-			number = (rand(8) + 1).to_s
-			letter = change(rand(8))
-			move = (letter + number).chars
-			move[1] = move[1].to_i
-			return move
+		def get_move(output, input, board)
+			ai_move_from(board)
+			ai_move_to(board)
 		end
 
+		private
+
+		def change_to_letter(number)
+			number_to_letter_map = (0..7).zip(('a'..'h')).to_h
+			return number_to_letter_map[number]
+		end
+
+		# Turns two randomly picked numbers to a valid board key symbol (e.g. :e4)
+		def pick_move
+			return (change_to_letter(rand(8)) + (rand(8) + 1).to_s).to_sym
+		end
+
+		# Picks a random valid piece
 		def ai_move_from(board)
 			@from = pick_move
-			if board[@from.join.to_sym] != " " && !board[@from.join.to_sym].is_white
+			if board[@from] != " " && !board[@from].white
 				return @from
 			else
 				ai_move_from(board)
 			end
 		end
 
+		# Picks a random valid spot to play the piece
 		def ai_move_to(board)
 			@to = pick_move
-			to_cloned = @to.clone
-			if board[@from.join.to_sym].is_legal_move?(convert_to_number(to_cloned))
-				unless board[@from.join.to_sym].class == Pawn || board[@from.join.to_sym].class == Knight
-					if board[@from.join.to_sym].class == King || board[@from.join.to_sym].legal_list(convert_to_number(to_cloned)).all? { |square| board[convert_to_key(square).join.to_sym] == " " }
+			if board[@from].legal_move?(@from, @to)
+				unless board[@from].class == Pawn || board[@from].class == Knight
+					if board[@from].class == King || board[@from].legal_list(@from, @to).all? { |square| board[square] == " " }
 						return @to
 					else
 						ai_move_to(board)
@@ -71,33 +66,22 @@ module Players
 
 	class Human < Player
 
-		def get_name
-			print "Enter Player's name: "
-			@name = gets.chomp.downcase.capitalize
+		def get_name(output, input)
+			output.puts "Enter your name:"
+			@name = input.gets.chomp.downcase.capitalize
 		end
 
-		def make_move
-			puts "\nEnter your move."
-			print "From : "
-			@from = gets.chomp.chars
-			print "To   : "
-			@to = gets.chomp.chars
-			unless (("a".."h").include?(@from[0]) || ("a".."h").include?(@to[0])) || ((1..8).include?(@from[1]) || (1..8).include?(@to[1]))
-				rescue_make_move
+		def get_move(output, input, board)
+			output.puts "\nEnter your move (e.g. 'a2 a4'):"
+			@move = input.gets.chomp
+			if @move == "save"
+				return @move
+			elsif /^[a-h][1-8]\s+[a-h][1-8]$/ =~ @move
+				@from = @move.split[0].to_sym
+				@to = @move.split[1].to_sym
 			else
-				@from[1] = @from[1].to_i
-				@to[1] = @to[1].to_i
+				get_move(output, input, board)
 			end
-		end
-
-		def rescue_make_move
-			puts "\n======================================================================"
-			puts "!!! INVALID INPUT !!!".center(65)
-			puts "Check your input:"
-			puts "  * The format of your input should be as follows: a4, b1, d8, etc..."
-			puts "  * There might not be any piece on the spot you've specified."
-			puts "======================================================================"
-			make_move
 		end
 	end
 end
