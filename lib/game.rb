@@ -1,5 +1,4 @@
-#!/usr/bin/ruby
-require_relative "lib/require_files.rb"
+require_relative "require_files.rb"
 
 class Game
 	include SpecialMoves

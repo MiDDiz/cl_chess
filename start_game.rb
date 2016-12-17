@@ -1,5 +1,5 @@
 require "socket"
-require_relative "./game.rb"
+require_relative "lib/game.rb"
 
 network = ARGV.include?("network") ? true : false
 
