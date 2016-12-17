@@ -59,7 +59,7 @@ module Pieces
 
 		def initialize(white=false)
 			super
-			@sign = white ? "\u2659" : "\u265F"
+			@sign = white ? "\u265F" : "\u2659"
 			@en_passant_valid = false
 		end
 
@@ -81,7 +81,7 @@ module Pieces
 
 		def initialize(white=false)
 			super
-			@sign = white ? "\u2656" : "\u265C"
+			@sign = white ? "\u265C" : "\u2656"
 		end
 
 		def legal_move?(from, to)
@@ -109,7 +109,7 @@ module Pieces
 
 		def initialize(white=false)
 			super
-			@sign = white ? "\u2658" : "\u265E"
+			@sign = white ? "\u265E" : "\u2658"
 		end
 
 		# Checks the validity by checking the differences of the letter and number values of the key symbols.
@@ -128,7 +128,7 @@ module Pieces
 
 		def initialize(white=false)
 			super
-			@sign = white ? "\u2657" : "\u265D"
+			@sign = white ? "\u265D" : "\u2657"
 		end
 
 		def legal_move?(from, to)
@@ -152,7 +152,7 @@ module Pieces
 
 		def initialize(white=false)
 			super
-			@sign = white ? "\u2654" : "\u265A"
+			@sign = white ? "\u265A" : "\u2654"
 		end
 
 		# Checks the validity by checking the differences of the letter and number values of the key symbols.
@@ -173,7 +173,7 @@ module Pieces
 
 		def initialize(white=false)
 			super
-			@sign = white ? "\u2655" : "\u265B"
+			@sign = white ? "\u265B" : "\u2655"
 		end
 
 		def legal_move?(from, to)

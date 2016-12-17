@@ -1,4 +1,4 @@
-module Helper
+module Helpers
 
 	def square(spot)
 		return @board.board[spot]
@@ -53,13 +53,13 @@ module Helper
 	end
 
 	def raise_invalid_move
-		if @human || @turns.even?
+		if !@comp || @turns.even?
 			@output.puts "\n======================================================"
 			@output.puts "!!! INVALID MOVE !!!".center(50)
 			@output.puts "The specified piece is not allowed to make that move!"
 			@output.puts "======================================================"
 		end
-		start_game
+		start_turn
 	end
 
 	def raise_invalid_input
@@ -78,7 +78,7 @@ module Helper
 		when "n"
 			print "\nDo you want to continue to play or save and exit? Type 'c' for continue and 's' for save and exit: "
 			case gets.chomp.downcase
-			when "c" then start_game
+			when "c" then start_turn
 			when "s" then exit_game
 			end
 		end

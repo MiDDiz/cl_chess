@@ -1,45 +1,15 @@
 module InitialTurn
 	
-	def intro
-		system("clear")
-		sleep 1
-		pick_human_or_ai unless @on_network
-		@human ? play_with_human : play_with_ai
-		welcome
+	def initialize_game
+		@comp ? play_with_comp : play_with_human
 		set_player_name
 		set_board
 		show_board
-	end
-
-	def pick_human_or_ai
-		puts "Would you like to play against the computer?(y/n)"
-		case gets.chomp.downcase
-		when "y" then @human = false
-		when "n" then return @human = true
-		end
-	end
-
-	def welcome
-		puts "=================================================="
-		puts "Welcome to the command-line chess!".center(50)
-		puts "In order to save and quit, type 'e0' as your move.".center(50)
-		puts "Please read README for more info.".center(50)
-		puts "You know the rules.".center(50)
-		puts "So hop on and have fun!".center(50)
-		puts "=================================================="
-		if @on_network
-			@output.puts "=================================================="
-			@output.puts "Welcome to the command-line chess!".center(50)
-			@output.puts "In order to save and quit, type 'e0' as your move.".center(50)
-			@output.puts "Please read README for more info.".center(50)
-			@output.puts "You know the rules.".center(50)
-			@output.puts "So hop on and have fun!".center(50)
-			@output.puts "=================================================="
-		end
+		start_turn
 	end
 
 	def set_player_name
-		if @human
+		unless @comp
 			@player_1.get_name(STDOUT, STDIN)
 			@player_2.get_name(@output, @input)
 		else
@@ -52,7 +22,7 @@ module InitialTurn
 		@player_2 = Players::Human.new
 	end
 
-	def play_with_ai
+	def play_with_comp
 		@player_1 = Players::Human.new(true)
 		@player_2 = Players::AI.new
 	end

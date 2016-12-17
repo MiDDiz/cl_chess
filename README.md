@@ -26,7 +26,7 @@ and the game will load. If there is no such saved game, then a new game will sta
 
 ## 2-Player game over network connection
 
-Pass `network` as an argument to `ruby start_game.rb` and a server will fire up at port 2000 on your localhost. When another computer on the network runs `ruby join_game.rb your_ip_address`, a game will start. The connecting computer doesn't need to have the whole game script. If a game doesn't start, your firewall might be blocking incoming requests. Make sure to make the necessary adjustments.
+When you pick the option to play over a network, a server will fire up at port 2000 on your localhost. When another computer on the network runs `ruby join_game.rb your_ip_address`, a game will start. The connecting computer doesn't need to have the whole game script. If a game doesn't start, your firewall might be blocking incoming requests. Make sure to make the necessary adjustments.
 
 ## Also with a simple AI
 	

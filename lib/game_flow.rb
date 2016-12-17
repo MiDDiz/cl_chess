@@ -1,6 +1,6 @@
 module GameFlow
 
-	def start_game
+	def start_turn
 		begin
 			loop do
 				switch_stream
@@ -51,7 +51,7 @@ module GameFlow
 			end
 		rescue NoMethodError
 			raise_invalid_input if @human || @turns.even?
-			start_game
+			start_turn
 		end
 	end
 

@@ -36,7 +36,7 @@ module SpecialMoves
 
 	def choose_castling?
 		@output.puts "Would you like to castle?(y/n):"
-		return @human ? human_pick : ai_pick
+		return @comp ? ai_pick : human_pick
 	end
 
 	def set_en_passant_turn(from, to)
@@ -77,6 +77,6 @@ module SpecialMoves
 	def choose_en_passant?
 		show_whose_turn
 		@output.puts "\nWould you like to do 'en passant'?:"
-		@human ? human_pick : ai_pick
+		@comp ? ai_pick : human_pick
 	end
 end			

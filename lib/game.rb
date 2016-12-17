@@ -2,7 +2,7 @@ require_relative "require_files.rb"
 
 class Game
 	include SpecialMoves
-	include Helper
+	include Helpers
 	include InitialTurn
 	include GameFlow
 	include Check
@@ -10,16 +10,24 @@ class Game
 	include SaveLoad
 	include Turn
 
-	def initialize(config)
+	def initialize(config={})
 		@board = Board.new
 		@turns = 0
 		@over = false
-		@human = true
+		@comp = config[:comp] || false
 		@on_network = config[:network] || false
 		@stream = config[:stream]
+		@saved = config[:saved] || false
 		@output = @stream || STDOUT
 		@input = @stream || STDIN
-		give_options unless @on_network
-		new_or_saved?
+		pick_game
+	end
+
+	def pick_game
+		if @saved
+			find_saved_game
+		else
+			initialize_game
+		end
 	end
 end

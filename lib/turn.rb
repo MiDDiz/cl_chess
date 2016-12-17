@@ -7,12 +7,12 @@ module Turn
 	def show_whose_turn
 		@stream.puts "\n#{@player_1.name} has the white pieces. #{@player_2.name} has the black pieces." if @turns.zero? && @on_network
 		STDOUT.puts "\n#{@player_1.name} has the white pieces. #{@player_2.name} has the black pieces." if @turns.zero?
-		@output.puts @turns.odd? ? "\nIt is Black's turn!" : "\nIt is White's turn!" if @human || @turns.even?
+		@output.puts @turns.odd? ? "\nIt is Black's turn!" : "\nIt is White's turn!" if !@comp || @turns.even?
 	end
 
 	# Shows the valid move of the computer
 	def show_ai_move
-		if !@human && @turns.odd?
+		if @comp && @turns.odd?
 			@output.puts "\nIt is Black's turn!"
 			@output.puts "\n#{@player_2.from unless @player_2.from.nil?}" + " #{@player_2.to unless @player_2.to.nil?}\n"
 		end
