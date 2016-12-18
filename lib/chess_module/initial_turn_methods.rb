@@ -1,6 +1,20 @@
-module InitialTurn
+# ======================================
+# Methods used only in the initial turn
+# ======================================
+module Chess
 	
+	private
+	
+	def pick_game
+		if @saved
+			find_saved_game
+		else
+			initialize_game
+		end
+	end
+
 	def initialize_game
+		system("clear")
 		@comp ? play_with_comp : play_with_human
 		set_player_name
 		set_board
@@ -24,7 +38,7 @@ module InitialTurn
 
 	def play_with_comp
 		@player_1 = Players::Human.new(true)
-		@player_2 = Players::AI.new
+		@player_2 = Players::Comp.new
 	end
 
 	def set_current_player

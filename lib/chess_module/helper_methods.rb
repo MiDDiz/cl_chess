@@ -1,11 +1,16 @@
-module Helpers
+# ====================================
+# Helper methods for the overall game
+# ====================================
+module Chess
+
+	private
 
 	def square(spot)
 		return @board.board[spot]
 	end
 
 	# Makes a random true or false
-	def ai_pick
+	def comp_pick
 		case rand(2)
 		when 1 then return true
 		when 0 then return false

@@ -1,5 +1,10 @@
-module Validity
+# ============================================
+# Methods for checking the validity of a move
+# ============================================
+module Chess
 
+	private
+	
 	def players_color?(from, to)
 		return square(from).white != square(to).white ? true : false
 	end

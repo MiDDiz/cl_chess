@@ -1,5 +1,10 @@
-module SpecialMoves
+# ===================================================================
+# Methods related special moves like Promotion, Castling, En Passant
+# ===================================================================
+module Chess
 
+	private
+	
 	def promote(from, to)
 		@output.puts "Pick a piece you would like to promote your pawn to:"
 		piece = @input.gets.chomp.downcase.capitalize
@@ -36,7 +41,7 @@ module SpecialMoves
 
 	def choose_castling?
 		@output.puts "Would you like to castle?(y/n):"
-		return @comp ? ai_pick : human_pick
+		return @comp ? comp_pick : human_pick
 	end
 
 	def set_en_passant_turn(from, to)
@@ -77,6 +82,6 @@ module SpecialMoves
 	def choose_en_passant?
 		show_whose_turn
 		@output.puts "\nWould you like to do 'en passant'?:"
-		@comp ? ai_pick : human_pick
+		@comp ? comp_pick : human_pick
 	end
 end			

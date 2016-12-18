@@ -1,4 +1,6 @@
 
+==================================================================================================
+
 * Making a move
 	When you are prompted for making your move, enter it as 'from to' combination.
 	For example, 'a4 a5'.

@@ -15,11 +15,12 @@ module Pieces
 		def str_legal?(from, to)
 			return true if from[0] == to[0] && from[1] != to[1] # The squares on the same column share the same letter
 			return true if from[0] != to[0] && from[1] == to[1] # The squares on the same row share the same number
+			return false
 		end
 
 		def dia_legal?(from, to)
 			# The difference of the letters and that of the numbers of two diagonally aligned squares are the same.
-			return true if (from[0].ord - to[0].ord).abs == (from[1].ord - to[1].ord).abs
+			return (from[0].ord - to[0].ord).abs == (from[1].ord - to[1].ord).abs
 		end
 
 		# _line methods increment or decrement the key symbol characters to adjust the position of the piece played 
@@ -73,6 +74,8 @@ module Pieces
 				return true
 			elsif from[0].ord - to[0].ord == 0 && (from[1].ord - to[1].ord).abs == 2 && !moved
 				return true
+			else
+				return false
 			end
 		end
 	end
@@ -120,6 +123,8 @@ module Pieces
 				return true
 			elsif (from[0].ord - to[0].ord).abs == 2 && (from[1].ord - to[1].ord).abs == 1	# Horizontal L
 				return true
+			else
+				return false
 			end
 		end
 	end
@@ -165,6 +170,8 @@ module Pieces
 				return true
 			elsif (from[0].ord - to[0].ord).abs == 1 && (from[1].ord - to[1].ord).abs == 1		# Diagonal move
 				return true
+			else
+				return false
 			end
 		end
 	end

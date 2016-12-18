@@ -1,13 +1,18 @@
 require "yaml"
 
-module SaveLoad
+# ======================
+# Save and load methods
+# ======================
+module Chess
 
+	private
+	
 	def find_saved_game
 		print "\nEnter White Player's name: "
-		name_1 = gets.chomp.downcase.capitalize
+		@name_1 = gets.chomp.downcase.capitalize
 		print "Enter Black Player's name: "
-		name_2 = gets.chomp.downcase.capitalize
-		File.exist?("saves/#{name_1 + "_vs_" +name_2}.txt") ? load_saved_game : start_new_game
+		@name_2 = gets.chomp.downcase.capitalize
+		File.exist?("saves/#{@name_1 + "_vs_" + @name_2}.txt") ? load_saved_game : start_new_game
 	end
 
 	def start_new_game

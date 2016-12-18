@@ -1,5 +1,10 @@
-module Check
+# ==================================================
+# Methods related to check, checkmate and stalemate
+# ==================================================
+module Chess
 
+	private
+	
 	# Checks if the current move of the current player causes a check position against itself
 	def getting_into_check?(from, to)
 		return check?(clone_board(from, to))

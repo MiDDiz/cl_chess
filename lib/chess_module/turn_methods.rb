@@ -1,5 +1,10 @@
-module Turn
-	
+# ===========================
+# Methods used in every turn
+# ===========================
+module Chess
+
+	private
+
 	def turn
 		@turns += 1
 	end
@@ -11,7 +16,7 @@ module Turn
 	end
 
 	# Shows the valid move of the computer
-	def show_ai_move
+	def show_comp_move
 		if @comp && @turns.odd?
 			@output.puts "\nIt is Black's turn!"
 			@output.puts "\n#{@player_2.from unless @player_2.from.nil?}" + " #{@player_2.to unless @player_2.to.nil?}\n"
@@ -25,6 +30,7 @@ module Turn
 		@output.puts "\nWaiting for the player to make a move..." if @on_network
 	end
 
+	# Switch input - output stream while playing over a network
 	def switch_stream
 		if @on_network
 			if @turns.even?

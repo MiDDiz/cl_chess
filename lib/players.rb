@@ -16,11 +16,11 @@ module Players
 		end
 	end
 
-	class AI < Player
+	class Comp < Player
 
 		def get_move(output, input, board)
-			ai_move_from(board)
-			ai_move_to(board)
+			comp_move_from(board)
+			comp_move_to(board)
 		end
 
 		private
@@ -36,30 +36,30 @@ module Players
 		end
 
 		# Picks a random valid piece
-		def ai_move_from(board)
+		def comp_move_from(board)
 			@from = pick_move
 			if board[@from] != " " && !board[@from].white
 				return @from
 			else
-				ai_move_from(board)
+				comp_move_from(board)
 			end
 		end
 
 		# Picks a random valid spot to play the piece
-		def ai_move_to(board)
+		def comp_move_to(board)
 			@to = pick_move
 			if board[@from].legal_move?(@from, @to)
 				unless board[@from].class == Pawn || board[@from].class == Knight
 					if board[@from].class == King || board[@from].legal_list(@from, @to).all? { |square| board[square] == " " }
 						return @to
 					else
-						ai_move_to(board)
+						comp_move_to(board)
 					end
 				else
 					return @to
 				end
 			else
-				ai_move_to(board)
+				comp_move_to(board)
 			end
 		end
 	end
